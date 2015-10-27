@@ -1,10 +1,10 @@
 import exceptions.{NoSufficientFundsException, IllegalAmountException}
 
 class Account(initialBalance: Double, val uid: Int = Bank getUniqueId) {
-  var balance = initialBalance
+  var balance = new Balance(initialBalance)
   
   def withdraw(amount: Double): Unit = {
-    if (amount > this.balance) {
+    if (amount > this.balance.get()) {
 
       throw new NoSufficientFundsException()
 
@@ -12,8 +12,15 @@ class Account(initialBalance: Double, val uid: Int = Bank getUniqueId) {
 
       throw new IllegalAmountException()
 
-    } else balance -= amount
+    } else {
 
+      balance.synchronized {
+
+        val newBalance = this.balance.get() - amount
+        this.balance.set(newBalance)
+
+      }
+    }
   }
   
   def deposit(amount: Double): Unit = {
@@ -21,11 +28,20 @@ class Account(initialBalance: Double, val uid: Int = Bank getUniqueId) {
 
       throw new IllegalAmountException()
 
-    } else this.balance += amount
+    } else {
+
+      balance.synchronized {
+
+        val newBalance = this.balance.get() + amount
+        this.balance.set(newBalance)
+
+      }
+    }
   }
   
   def getBalanceAmount: Double = {
-    this.balance
-  }
 
+    this.balance.get()
+
+  }
 }

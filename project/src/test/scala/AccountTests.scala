@@ -51,7 +51,6 @@ class AccountTests extends FunSuite {
 	    for (i<- 0 until 100) { acc.deposit(100); Thread.sleep(10) }
 	    }
     first.join(); second.join(); third.join(); fourth.join()
-    // println(acc.getBalanceAmount)
     assert (acc.getBalanceAmount == 54500)
 	}
 
