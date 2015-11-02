@@ -11,14 +11,14 @@ class Account(val bank: Bank, initialBalance: Double) {
   def withdraw(amount: Double): Unit = {
     balance.synchronized {
       if (balance.amount - amount < 0) throw new NoSufficientFundsException()
-      if (amount < 0) throw new IllegalAmountException()
+      if (amount <= 0) throw new IllegalAmountException()
       balance.amount -= amount
     }
   }
 
   def deposit(amount: Double): Unit = {
     balance.synchronized {
-      if (amount < 0) throw new IllegalAmountException()
+      if (amount <= 0) throw new IllegalAmountException()
       balance.amount += amount
     }
   }

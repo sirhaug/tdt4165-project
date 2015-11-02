@@ -29,11 +29,11 @@ class Transaction(val transactionsQueue: TransactionQueue,
                   val from: Account,
                   val to: Account,
                   val amount: Double,
-                  val allowedAttemps: Integer) extends Runnable {
+                  val allowedAttemps: Int) extends Runnable {
 
   var status: TransactionStatus.Value = TransactionStatus.PENDING
 
-  def run: Unit = {
+  override def run: Unit = {
     
     def doTransaction() = {
       from withdraw amount
