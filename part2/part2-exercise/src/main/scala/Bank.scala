@@ -32,24 +32,12 @@ class Bank(val allowedAttempts: Integer = 3) {
   } // END generateAccountId
 
   private def processTransactions(): Unit = {
-    // Do Something
-    // Run/call executorContext
 
-    if (!this.transactionsQueue.isEmpty) {
+    while (!this.transactionsQueue.isEmpty) {
 
-      val transaction = this.transactionsQueue.peek
+      val transaction = this.transactionsQueue.pop
 
-      if (transaction.status == TransactionStatus.PENDING
-        || (transaction.status == TransactionStatus.FAILED
-          && transaction.numberOfFailedAttempts <= this.allowedAttempts)) {
-
-        this.executorContext.execute(transaction)
-
-      } else {
-
-        this.processedTransactions.push(this.transactionsQueue.pop)
-
-      }
+      this.executorContext.execute(transaction)
 
     } // END if (!this.transactionsQueue.isEmpty)
 

@@ -34,40 +34,56 @@ class Transaction(val transactionsQueue: TransactionQueue,
                   val allowedAttempts: Int) extends Runnable {
 
   var status: TransactionStatus.Value = TransactionStatus.PENDING
-  var numberOfFailedAttempts = 0
+  @volatile var numberOfFailedAttempts = 0
 
   override def run(): Unit = {
-    
+
     def doTransaction() = {
       from withdraw amount
       to deposit amount
     }
 
-    try {
-
-      if (from.uid < to.uid) from synchronized {
-        to synchronized {
-          doTransaction()
-        }
-      } else to synchronized {
-        from synchronized {
-          doTransaction()
-        }
+    def doFail() = {
+      this.synchronized {
+        this.status = TransactionStatus.FAILED
+        this.numberOfFailedAttempts += 1
+        this.transactionsQueue.push(this)
       }
+    }
 
-      this.status == TransactionStatus.SUCCESS
+    if (this.status == TransactionStatus.FAILED
+      && this.numberOfFailedAttempts >= this.allowedAttempts) {
 
-    } catch {
+      this.processedTransactions.push(this)
 
-      case iae: IllegalAmountException =>
-        this.status == TransactionStatus.FAILED
-        this.numberOfFailedAttempts += 1
+    } else {
 
-      case nsfe: NoSufficientFundsException =>
-        this.status == TransactionStatus.FAILED
-        this.numberOfFailedAttempts += 1
+      try {
 
-    } // END try/catch
+        if (from.uid < to.uid) from synchronized {
+          to synchronized {
+            doTransaction()
+          }
+        } else to synchronized {
+          from synchronized {
+            doTransaction()
+          }
+        }
+
+        this.status = TransactionStatus.SUCCESS
+        this.processedTransactions.push(this)
+
+      } catch {
+
+        case iae: IllegalAmountException =>
+          doFail()
+
+        case nsfe: NoSufficientFundsException =>
+          doFail()
+
+      } // END try/catch
+
+    } // END if / else status == FAILED
 
   } // END run()
 
