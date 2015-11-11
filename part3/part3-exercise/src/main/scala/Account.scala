@@ -24,12 +24,17 @@ class Account(val accountId: String, val bankId: String, val initialBalance: Dou
 
   def getTransactions: List[Transaction] = {
     // Should return a list of all Transaction-objects stored in transactions
-    ???
+    this.transactions.values.toList
   }
 
   def allTransactionsCompleted: Boolean = {
     // Should return whether all Transaction-objects in transactions are completed
-    ???
+    this.transactions foreach {case (key, transaction) =>
+      if (transaction.status != TransactionStatus.SUCCESS) {
+        false
+      }
+    }
+    true
   }
 
   def withdraw(amount: Double): Unit = {
@@ -49,7 +54,9 @@ class Account(val accountId: String, val bankId: String, val initialBalance: Dou
 
   def sendTransactionToBank(t: Transaction): Unit = {
     // Should send a message containing t to the bank of this account
-    ???
+    val bank = BankManager.findBank(this.bankId)
+
+    bank ! t
   }
 
   def transferTo(accountNumber: String, amount: Double): Transaction = {
@@ -84,17 +91,29 @@ class Account(val accountId: String, val bankId: String, val initialBalance: Dou
 
     case TransactionRequestReceipt(to, transactionId, transaction) => {
       // Process receipt
-      ???
+      if (to.equals(this.getFullAddress)) {
+        if (transactions.contains(transactionId)) {
+          transactions.get(transactionId).get.status = transaction.status
+          transactions.get(transactionId).get.receiptReceived = true
+        }
+
+        if (transaction.status == TransactionStatus.FAILED) {
+          this.deposit(transaction.amount)
+        }
+      }
     }
 
-    case BalanceRequest => ??? // Should return current balance
+    case BalanceRequest => sender ! this.balance // Should return current balance
 
     case t: Transaction => {
       // Handle incoming transaction
-      ???
+      this.deposit(t.amount)
+      t.status = TransactionStatus.SUCCESS
+
+      sender ! new TransactionRequestReceipt(t.from, t.id, t)
     }
     
-    case msg => ???
+    case msg => Console.println(s"'$msg' is $msg")
   }
 
   def getBalanceAmount: Double = balance.amount
