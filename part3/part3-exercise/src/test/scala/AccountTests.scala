@@ -78,6 +78,7 @@ class Test03 extends FunSuite {
   }
 }
 
+/*
 class Test04 extends FunSuite {
 
   test("Valid transaction between two different banks, accounts should have correct balance.") {
@@ -454,3 +455,4 @@ class Test17 extends FunSuite {
 
   }
 }
+*/
