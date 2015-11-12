@@ -26,6 +26,7 @@ object BankManager {
   }
 
   def findAccount(bankId: String, accountId: String): ActorRef = {
+    Console.println(s"############## Trying to find account $bankId$accountId")
     val name = s"account$bankId$accountId"
     accounts(name)
   }

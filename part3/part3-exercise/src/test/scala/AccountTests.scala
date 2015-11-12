@@ -73,6 +73,8 @@ class Test03 extends FunSuite {
 
     account1.transferTo(account2.accountId, 200)
 
+    Console.println(s"--------------> ${account1.accountId}:${account1.getBalanceAmount} :: ${account2.accountId}:${account2.getBalanceAmount}")
+
     TestHelper.waitUntilAllTransactionsAreCompleted(List(account1, account2))
     assert(account1.getBalanceAmount == 800 && account2.getBalanceAmount == 1200)
   }

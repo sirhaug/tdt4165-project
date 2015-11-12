@@ -39,11 +39,15 @@ class Bank(val bankId: String) extends Actor {
   def findAccount(accountId: String): Option[ActorRef] = {
     // Use BankManager to look up an account with ID accountId
     try {
-      Some(BankManager.findAccount(this.bankId, accountId))
+      val s = Some(BankManager.findAccount(this.bankId, accountId))
+      Console.println("-#-#-#-#-#-#-#-#- FOUND INTERNAL ACCOUNT")
+      s
     }
 
     catch {
-      case _:NoSuchElementException => None
+      case _:NoSuchElementException =>
+        Console.println("................. didn't find internal account...")
+        None
     }
   }
 
@@ -62,7 +66,9 @@ class Bank(val bankId: String) extends Actor {
     case CreateAccountRequest(initialBalance) => sender ! this.createAccount(initialBalance) // Create a new account
     case GetAccountRequest(id) => sender ! this.findAccount(id) // Return account
     case IdentifyActor => sender ! this
-    case t: Transaction => processTransaction(t)
+    case t: Transaction => {
+      processTransaction(t)
+    }
 
     case t: TransactionRequestReceipt => {
       // Forward receipt
@@ -74,8 +80,11 @@ class Bank(val bankId: String) extends Actor {
       }
     } // END case TransactionRequestReceipt
 
-    case msg => Console.println(s"'$msg' is $msg")
-  }
+    case msg => {
+      Console.println(s"'$msg' is $msg")
+      sender ! msg
+    }
+  } // END receive
 
   def processTransaction(t: Transaction): Unit = {
     implicit val timeout = new Timeout(5 seconds)
@@ -87,11 +96,19 @@ class Bank(val bankId: String) extends Actor {
     // This method should forward Transaction t to an account or another bank, depending on the "to"-address.
     // HINT: Make use of the variables that have been defined above.
     if (isInternal) {
+      Console.println("---------------------------> IS INTERNAL")
       val accFind = this.findAccount(toAccountId)
 
       if (accFind.isDefined) {
+        Console.println("--------------------------> IS DEFINED")
         val acc = accFind.get
         acc ! t
+      }
+
+      else {
+        Console.println("------------------------------> is NOT defined")
+        t.status = TransactionStatus.FAILED
+        sender ! new TransactionRequestReceipt(t.from, t.id, t)
       }
     }
 
@@ -102,6 +119,11 @@ class Bank(val bankId: String) extends Actor {
         val bank = bankFind.get
         bank ! t
       }
+
+      else {
+        t.status = TransactionStatus.FAILED
+        sender ! new TransactionRequestReceipt(t.from, t.id, t)
+      }
     } // END if/else isInternal
-  }
+  } // END processTransactions
 }
