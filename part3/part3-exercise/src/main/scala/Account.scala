@@ -103,7 +103,7 @@ class Account(val accountId: String, val bankId: String, val initialBalance: Dou
       }
     }
 
-    case BalanceRequest => sender ! this.balance // Should return current balance
+    case BalanceRequest => sender ! this.balance.amount // Should return current balance
 
     case t: Transaction => {
       // Handle incoming transaction

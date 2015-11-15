@@ -39,7 +39,6 @@ object TestHelper {
   }
 }
 
-
 class Test01 extends FunSuite {
 
   test("Add new bank") {
@@ -335,6 +334,7 @@ class Test13 extends FunSuite {
   }
 }
 
+
 class Test14 extends FunSuite {
 
   test("Valid transactions between two banks using full account address, account balances should be correct. Also, sending a BalanceRequest to an account should yield the correct balance.") {
@@ -454,5 +454,3 @@ class Test17 extends FunSuite {
 
   }
 }
-/*
-*/
