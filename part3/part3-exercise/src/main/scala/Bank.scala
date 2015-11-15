@@ -32,21 +32,17 @@ class Bank(val bankId: String) extends Actor {
   def createAccount(initialBalance: Double): ActorRef = {
     // Should create a new Account Actor and return its actor reference. Accounts should be assigned with unique ids (increment with 1).
     val id = this.generateAccountId.toString
-    // val accProps = Props(classOf[Account], id, this.bankId, initialBalance)
-    context.actorOf(Props(classOf[Account], id, this.bankId, initialBalance))
+    BankManager.createAccount(id, this.bankId, initialBalance)
   }
 
   def findAccount(accountId: String): Option[ActorRef] = {
     // Use BankManager to look up an account with ID accountId
     try {
-      val s = Some(BankManager.findAccount(this.bankId, accountId))
-      Console.println("-#-#-#-#-#-#-#-#- FOUND INTERNAL ACCOUNT")
-      s
+      Some(BankManager.findAccount(this.bankId, accountId))
     }
 
     catch {
       case _:NoSuchElementException =>
-        Console.println("................. didn't find internal account...")
         None
     }
   }
@@ -96,17 +92,14 @@ class Bank(val bankId: String) extends Actor {
     // This method should forward Transaction t to an account or another bank, depending on the "to"-address.
     // HINT: Make use of the variables that have been defined above.
     if (isInternal) {
-      Console.println("---------------------------> IS INTERNAL")
       val accFind = this.findAccount(toAccountId)
 
       if (accFind.isDefined) {
-        Console.println("--------------------------> IS DEFINED")
         val acc = accFind.get
         acc ! t
       }
 
       else {
-        Console.println("------------------------------> is NOT defined")
         t.status = TransactionStatus.FAILED
         sender ! new TransactionRequestReceipt(t.from, t.id, t)
       }
