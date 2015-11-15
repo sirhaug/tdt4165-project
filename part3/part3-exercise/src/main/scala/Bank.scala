@@ -62,11 +62,11 @@ class Bank(val bankId: String) extends Actor {
     case CreateAccountRequest(initialBalance) => sender ! this.createAccount(initialBalance) // Create a new account
     case GetAccountRequest(id) => sender ! this.findAccount(id) // Return account
     case IdentifyActor => sender ! this
-    case t: Transaction => {
+    case t: Transaction =>
+      // Console.println(s"Bank ${this.bankId} received transaction ${t.id}")
       processTransaction(t)
-    }
 
-    case t: TransactionRequestReceipt => {
+    case t: TransactionRequestReceipt =>
       // Forward receipt
       val accFind = this.findAccount(t.toAccountNumber)
 
@@ -74,12 +74,10 @@ class Bank(val bankId: String) extends Actor {
         val acc = accFind.get
         acc ! t
       }
-    } // END case TransactionRequestReceipt
 
-    case msg => {
+    case msg =>
       Console.println(s"'$msg' is $msg")
       sender ! msg
-    }
   } // END receive
 
   def processTransaction(t: Transaction): Unit = {
@@ -91,32 +89,23 @@ class Bank(val bankId: String) extends Actor {
     
     // This method should forward Transaction t to an account or another bank, depending on the "to"-address.
     // HINT: Make use of the variables that have been defined above.
-    if (isInternal) {
-      val accFind = this.findAccount(toAccountId)
 
-      if (accFind.isDefined) {
-        val acc = accFind.get
-        acc ! t
+    try {
+      if (isInternal || toBankId == this.bankId) {
+        Console.println(s"Bank ${this.bankId} received an internal transaction to account ${t.to}")
+        this.findAccount(toAccountId).get ! t
       }
 
       else {
-        t.status = TransactionStatus.FAILED
-        sender ! new TransactionRequestReceipt(t.from, t.id, t)
+        Console.println(s"Bank ${this.bankId} is transmitting an external transaction from account ${t.from}")
+        this.findOtherBank(toBankId).get ! t
       }
     }
 
-    else {
-      val bankFind = this.findOtherBank(toBankId)
-
-      if (bankFind.isDefined) {
-        val bank = bankFind.get
-        bank ! t
-      }
-
-      else {
+    catch {
+      case _:NoSuchElementException =>
         t.status = TransactionStatus.FAILED
         sender ! new TransactionRequestReceipt(t.from, t.id, t)
-      }
-    } // END if/else isInternal
+    }
   } // END processTransactions
 }
