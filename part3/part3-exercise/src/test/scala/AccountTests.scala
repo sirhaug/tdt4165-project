@@ -97,7 +97,6 @@ class Test04 extends FunSuite {
 }
 
 
-/*
 class Test05 extends FunSuite {
 
   test("Valid transaction between two different banks, sender transaction list should have the correct status information.") {
@@ -455,4 +454,5 @@ class Test17 extends FunSuite {
 
   }
 }
+/*
 */

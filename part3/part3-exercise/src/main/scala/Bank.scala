@@ -92,12 +92,10 @@ class Bank(val bankId: String) extends Actor {
 
     try {
       if (isInternal || toBankId == this.bankId) {
-        Console.println(s"Bank ${this.bankId} received an internal transaction to account ${t.to}")
         this.findAccount(toAccountId).get ! t
       }
 
       else {
-        Console.println(s"Bank ${this.bankId} is transmitting an external transaction from account ${t.from}")
         this.findOtherBank(toBankId).get ! t
       }
     }
