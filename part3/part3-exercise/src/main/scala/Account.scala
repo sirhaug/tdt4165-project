@@ -113,7 +113,7 @@ class Account(val accountId: String, val bankId: String, val initialBalance: Dou
       sender ! new TransactionRequestReceipt(t.from, t.id, t)
     }
     
-    case msg => Console.println(s"'$msg' is $msg")
+    case msg => sender ! msg
   }
 
   def getBalanceAmount: Double = balance.amount

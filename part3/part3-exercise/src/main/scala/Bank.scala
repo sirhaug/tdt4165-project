@@ -63,7 +63,6 @@ class Bank(val bankId: String) extends Actor {
     case GetAccountRequest(id) => sender ! this.findAccount(id) // Return account
     case IdentifyActor => sender ! this
     case t: Transaction =>
-      // Console.println(s"Bank ${this.bankId} received transaction ${t.id}")
       processTransaction(t)
 
     case t: TransactionRequestReceipt =>
@@ -76,7 +75,6 @@ class Bank(val bankId: String) extends Actor {
       }
 
     case msg =>
-      Console.println(s"'$msg' is $msg")
       sender ! msg
   } // END receive
 
